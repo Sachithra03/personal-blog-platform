@@ -9,7 +9,7 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    converImage:{
+    coverImage:{
         type: String
     },
     author:{
