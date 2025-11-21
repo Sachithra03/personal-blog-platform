@@ -1,6 +1,6 @@
-import expess from "express";
+import express from "express";
 import mongoose from "mongoose";
-import cros from "cros";
+import cors from "cors";
 import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes.js";
