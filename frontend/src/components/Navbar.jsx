@@ -8,6 +8,15 @@ export default function Navbar() {
     <div className="bg-gray-900 text-white p-4 flex justify-between">
       <a href="/" className="text-xl font-bold">Blog Platform</a>
 
+      {user && (
+  <a
+    href="/create"
+    className="text-white bg-green-600 px-3 py-1 rounded mr-3"
+  >
+    + New Post
+  </a>
+)}
+
       {user ? (
         <div className="flex gap-4 items-center">
           <span>Hello, {user.username}</span>

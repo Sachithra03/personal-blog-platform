@@ -5,55 +5,55 @@ import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
-//Create post
-router.post("/", auth, upload.single("coverImage"), async (req, res) => {
-    try {
-        const newPost = await Post.create({
-            title: req.body.title,
-            content: req.body.content,
-            author: req.body.user,
-            coverImage: req.file ? req.file.path : null
-        });
+// Create post
+router.post("/", auth, upload.single("image"), async (req, res) => {
+  try {
+    const newPost = await Post.create({
+      title: req.body.title,
+      content: req.body.content,
+      author: req.user.id,        
+      coverImage: req.file ? req.file.path : null
+    });
 
-        res.json(newPost);
+    res.json(newPost);
 
-    } catch (error) {
-        res.status(500).json({ error: err.message });
-    }
+  } catch (error) {
+    res.status(500).json({ error: error.message }); 
+  }
 });
 
-//Get all post
+// Get all posts
 router.get("/", async (req, res) => {
-    const posts = await Post.find().populate("author", "username avatar");
-    res.json(posts);
+  const posts = await Post.find().populate("author", "username avatar");
+  res.json(posts);
 });
 
-//Get single post
+// Get single post
 router.get("/:id", async (req, res) => {
-    const post = await Post.findById(req.params.id).populate("author", "isername avatar");
-    res.json(post);
+  const post = await Post.findById(req.params.id).populate("author", "username avatar");
+  res.json(post);
 });
 
-//Like
+// Like post
 router.patch("/:id/like", auth, async (req, res) => {
-    const post = await Post.findById( req.params.id);
+  const post = await Post.findById(req.params.id);
 
-    if(!post.likes.includes(req.user)){
-        post.likes.push(req.user);
-    }else{
-        post.likes.pull(req.user);
-    }
+  if (!post.likes.includes(req.user.id)) {
+    post.likes.push(req.user.id);
+  } else {
+    post.likes.pull(req.user.id);
+  }
 
-    await post.save();
-    res.json(post);
+  await post.save();
+  res.json(post);
 });
 
-//comment
-router.post("/:id/comment", auth, async ( req, res) => {
-    const post = await Post.findById(req.params.id);
-    post.comments.push({ user: req.user, text: req.body.text});
-    await post.save();
-    res.json(post);
+// Comment on post
+router.post("/:id/comment", auth, async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  post.comments.push({ user: req.user.id, text: req.body.text });
+  await post.save();
+  res.json(post);
 });
 
 export default router;
