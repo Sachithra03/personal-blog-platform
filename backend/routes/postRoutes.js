@@ -44,16 +44,29 @@ router.get("/:id", async (req, res) => {
 
 // Like post
 router.patch("/:id/like", auth, async (req, res) => {
-  const post = await Post.findById(req.params.id);
+  try {
+    const post = await Post.findById(req.params.id);
 
-  if (!post.likes.includes(req.user.id)) {
-    post.likes.push(req.user.id);
-  } else {
-    post.likes.pull(req.user.id);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    if (!post.likes.includes(req.user.id)) {
+      post.likes.push(req.user.id);
+    } else {
+      post.likes.pull(req.user.id);
+    }
+
+    await post.save();
+    
+    // Populate author before sending response
+    await post.populate("author", "username avatar");
+    
+    res.json(post);
+  } catch (error) {
+    console.error("Like error:", error);
+    res.status(500).json({ error: error.message });
   }
-
-  await post.save();
-  res.json(post);
 });
 
 // Comment on post
