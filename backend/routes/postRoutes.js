@@ -28,7 +28,8 @@ router.get("/", async (req, res) => {
     // return newest posts first
     const posts = await Post.find()
       .sort({ createdAt: -1 })
-      .populate("author", "username avatar");
+      .populate("author", "username avatar")
+      .populate("comments.user", "username avatar");
 
     res.json(posts);
   } catch (error) {
@@ -71,10 +72,33 @@ router.patch("/:id/like", auth, async (req, res) => {
 
 // Comment on post
 router.post("/:id/comment", auth, async (req, res) => {
-  const post = await Post.findById(req.params.id);
-  post.comments.push({ user: req.user.id, text: req.body.text });
-  await post.save();
-  res.json(post);
+  try {
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    if (!req.body.text || !req.body.text.trim()) {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+
+    post.comments.push({ 
+      user: req.user.id, 
+      text: req.body.text.trim() 
+    });
+    
+    await post.save();
+    
+    // Populate author and comment users before sending response
+    await post.populate("author", "username avatar");
+    await post.populate("comments.user", "username avatar");
+    
+    res.json(post);
+  } catch (error) {
+    console.error("Comment error:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;

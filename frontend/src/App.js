@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CreatePost from "./pages/CreatePost";
 import Home from "./pages/Home";
+import PostDetail from "./pages/PostDetail";
 
 export default function App(){
   return(
@@ -16,6 +17,7 @@ export default function App(){
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
+        <Route path="/post/:id" element={<PostDetail />} />
 
         <Route
           path="/create"

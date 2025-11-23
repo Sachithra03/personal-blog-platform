@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
@@ -6,11 +7,31 @@ export default function PostCard({ post: initialPost }) {
   const { user } = useContext(AuthContext);
   const [post, setPost] = useState(initialPost);
   const [isLiking, setIsLiking] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [isCommenting, setIsCommenting] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   // Format date
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Format relative time for post
+  const formatRelativeTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+    return formatDate(dateString);
   };
 
   // Check if current user has liked the post
@@ -43,6 +64,54 @@ export default function PostCard({ post: initialPost }) {
     }
   };
 
+  // Handle comment submission
+  const handleComment = async (e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      alert("Please login to comment");
+      return;
+    }
+
+    if (!commentText.trim()) {
+      alert("Comment cannot be empty");
+      return;
+    }
+
+    if (isCommenting) return;
+
+    setIsCommenting(true);
+    try {
+      const { data } = await api.post(`/posts/${post._id}/comment`, {
+        text: commentText
+      });
+      setPost(data);
+      setCommentText(""); 
+      setShowComments(true); // Show comments
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      alert("Failed to add comment. Please try again.");
+    } finally {
+      setIsCommenting(false);
+    }
+  };
+
+  // Format comment date
+  const formatCommentDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
     <article className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
       <div className="p-6">
@@ -63,23 +132,17 @@ export default function PostCard({ post: initialPost }) {
             <p className="text-base font-semibold text-gray-900">
               {post.author?.username || "Unknown Author"}
             </p>
-            
-            {/* Creation Date */}
-          <div className="flex items-center text-gray-500 text-sm mb-4">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <time dateTime={post.createdAt}>{formatDate(post.createdAt)}</time>
-          </div>
-
+            <p className="text-sm text-gray-500">
+              {formatRelativeTime(post.createdAt)}
+            </p>
           </div>
           
         </div>
         {/* Title */}
         <h2 className="text-2xl font-bold mb-3 text-gray-900">
-          <a href={`/post/${post._id}`} className="hover:text-blue-600 transition-colors">
+          <Link to={`/post/${post._id}`} className="hover:text-blue-600 transition-colors">
             {post.title}
-          </a>
+          </Link>
         </h2>
 
         
@@ -105,18 +168,18 @@ export default function PostCard({ post: initialPost }) {
 
       {/* Like Section */}
       <div className="p-6 pt-4 border-t border-gray-200">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center gap-4 mb-4">
           <button
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+            className={`flex-1 flex items-center justify-center gap-3 px-6 py-3 rounded-lg transition-all text-base font-semibold ${
               isLiked 
                 ? 'bg-red-50 text-red-600 hover:bg-red-100' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             } ${isLiking ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           >
             <svg 
-              className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`}
+              className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`}
               fill={isLiked ? 'currentColor' : 'none'}
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -128,21 +191,92 @@ export default function PostCard({ post: initialPost }) {
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
               />
             </svg>
-            <span className="font-medium">
+            <span>
               {post.likes?.length || 0} {post.likes?.length === 1 ? 'Like' : 'Likes'}
             </span>
           </button>
 
-          <a 
-            href={`/post/${post._id}`}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-flex items-center"
+          <button
+            onClick={() => setShowComments(!showComments)}
+            className="flex-1 flex items-center justify-center gap-3 px-6 py-3 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all text-base font-semibold"
           >
-            Read more 
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
-          </a>
+            <span>
+              {post.comments?.length || 0} {post.comments?.length === 1 ? 'Comment' : 'Comments'}
+            </span>
+          </button>
         </div>
+
+        {/* Comment Form */}
+        {user && (
+          <form onSubmit={handleComment} className="mb-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write a comment..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isCommenting}
+              />
+              <button
+                type="submit"
+                disabled={isCommenting || !commentText.trim()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+              >
+                {isCommenting ? 'Posting...' : 'Post'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Comments Display */}
+        {showComments && post.comments && post.comments.length > 0 && (
+          <div className="space-y-3 mt-4">
+            {post.comments.slice().reverse().map((comment, index) => (
+              <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+                {comment.user?.avatar ? (
+                  <img
+                    src={comment.user.avatar}
+                    alt={comment.user.username}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                    {comment.user?.username?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-sm text-gray-900">
+                      {comment.user?.username || "Unknown User"}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatCommentDate(comment.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 break-words">{comment.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showComments && (!post.comments || post.comments.length === 0) && (
+          <p className="text-gray-500 text-sm text-center py-4">No comments yet. Be the first to comment!</p>
+        )}
+
+        <Link 
+          to={`/post/${post._id}`}
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-flex items-center mt-4"
+        >
+          Read full post 
+          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
 
     </article>
