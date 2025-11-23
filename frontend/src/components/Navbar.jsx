@@ -13,7 +13,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
+    <div className="bg-gray-900 text-white p-4 flex justify-between items-center fixed top-0 left-0 right-0 z-50 shadow-lg">
       <Link to="/" className="text-xl font-bold">Blog Platform</Link>
 
       <div className="flex items-center gap-4">

@@ -12,7 +12,7 @@ export default function App(){
   return(
     <BrowserRouter>
     <Navbar />
-
+    <div className="pt-16">
       <Routes>
        
         <Route path="/register" element={<Register />} />
@@ -31,7 +31,7 @@ export default function App(){
         />
 
       </Routes>
-
+      </div>
     </BrowserRouter>
   )
 }
