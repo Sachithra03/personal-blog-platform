@@ -5,55 +5,100 @@ import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
-//Create post
-router.post("/", auth, upload.single("coverImage"), async (req, res) => {
-    try {
-        const newPost = await Post.create({
-            title: req.body.title,
-            content: req.body.content,
-            author: req.body.user,
-            coverImage: req.file ? req.file.path : null
-        });
+// Create post
+router.post("/", auth, upload.single("image"), async (req, res) => {
+  try {
+    const newPost = await Post.create({
+      title: req.body.title,
+      content: req.body.content,
+      author: req.user.id,        
+      coverImage: req.file ? req.file.path : null
+    });
 
-        res.json(newPost);
+    res.json(newPost);
 
-    } catch (error) {
-        res.status(500).json({ error: err.message });
-    }
+  } catch (error) {
+    res.status(500).json({ error: error.message }); 
+  }
 });
 
-//Get all post
+// Get all posts
 router.get("/", async (req, res) => {
-    const posts = await Post.find().populate("author", "username avatar");
+  try {
+    // return newest posts first
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate("author", "username avatar")
+      .populate("comments.user", "username avatar");
+
     res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-//Get single post
+// Get single post
 router.get("/:id", async (req, res) => {
-    const post = await Post.findById(req.params.id).populate("author", "isername avatar");
-    res.json(post);
+  const post = await Post.findById(req.params.id).populate("author", "username avatar");
+  res.json(post);
 });
 
-//Like
+// Like post
 router.patch("/:id/like", auth, async (req, res) => {
-    const post = await Post.findById( req.params.id);
+  try {
+    const post = await Post.findById(req.params.id);
 
-    if(!post.likes.includes(req.user)){
-        post.likes.push(req.user);
-    }else{
-        post.likes.pull(req.user);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    if (!post.likes.includes(req.user.id)) {
+      post.likes.push(req.user.id);
+    } else {
+      post.likes.pull(req.user.id);
     }
 
     await post.save();
+    
+    // Populate author before sending response
+    await post.populate("author", "username avatar");
+    
     res.json(post);
+  } catch (error) {
+    console.error("Like error:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-//comment
-router.post("/:id/comment", auth, async ( req, res) => {
+// Comment on post
+router.post("/:id/comment", auth, async (req, res) => {
+  try {
     const post = await Post.findById(req.params.id);
-    post.comments.push({ user: req.user, text: req.body.text});
+    
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    if (!req.body.text || !req.body.text.trim()) {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+
+    post.comments.push({ 
+      user: req.user.id, 
+      text: req.body.text.trim() 
+    });
+    
     await post.save();
+    
+    // Populate author and comment users before sending response
+    await post.populate("author", "username avatar");
+    await post.populate("comments.user", "username avatar");
+    
     res.json(post);
+  } catch (error) {
+    console.error("Comment error:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;
