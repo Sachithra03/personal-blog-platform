@@ -3,13 +3,22 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
-export default function PostCard({ post: initialPost }) {
+export default function PostCard({ post: initialPost, onDelete }) {
   const { user } = useContext(AuthContext);
   const [post, setPost] = useState(initialPost);
   const [isLiking, setIsLiking] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Helper function to get full avatar URL
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return null;
+    if (avatar.startsWith('http')) return avatar;
+    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
+  };
 
   // Format date
   const formatDate = (dateString) => {
@@ -112,31 +121,97 @@ export default function PostCard({ post: initialPost }) {
     return date.toLocaleDateString();
   };
 
+  // Check if current user is the post owner
+  const isOwner = user && post.author && (
+    user.id === post.author._id || 
+    user._id === post.author._id ||
+    user.username === post.author.username
+  );
+
+  // Handle delete post
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await api.delete(`/posts/${post._id}`);
+      if (onDelete) {
+        onDelete(post._id);
+      }
+      alert("Post deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      alert("Failed to delete post. Please try again.");
+    } finally {
+      setIsDeleting(false);
+      setShowMenu(false);
+    }
+  };
+
   return (
     <article className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
       <div className="p-6">
-        {/* Author Information */}
-        <div className="flex items-center gap-3 mb-4">
-          {post.author?.avatar ? (
-            <img
-              src={post.author.avatar}
-              alt={post.author.username}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg">
-              {post.author?.username?.charAt(0).toUpperCase() || 'U'}
+        {/* Author Information with Menu */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Link to={`/profile/${post.author?.username}`} className="flex-shrink-0">
+              {getAvatarUrl(post.author?.avatar) ? (
+                <img
+                  src={getAvatarUrl(post.author.avatar)}
+                  alt={post.author.username}
+                  className="w-12 h-12 rounded-full object-cover hover:opacity-80 transition-opacity"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-lg hover:bg-blue-600 transition-colors">
+                  {post.author?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+            </Link>
+            <div>
+              <Link 
+                to={`/profile/${post.author?.username}`}
+                className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+              >
+                {post.author?.username || "Unknown Author"}
+              </Link>
+              <p className="text-sm text-gray-500">
+                {formatRelativeTime(post.createdAt)}
+              </p>
+            </div>
+          </div>
+
+          {/* Three Dots Menu - Only for post owner */}
+          {isOwner && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Post options"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    {isDeleting ? "Deleting..." : "Delete Post"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
-          <div>
-            <p className="text-base font-semibold text-gray-900">
-              {post.author?.username || "Unknown Author"}
-            </p>
-            <p className="text-sm text-gray-500">
-              {formatRelativeTime(post.createdAt)}
-            </p>
-          </div>
-          
         </div>
         {/* Title */}
         <h2 className="text-2xl font-bold mb-3 text-gray-900">
@@ -237,9 +312,9 @@ export default function PostCard({ post: initialPost }) {
           <div className="space-y-3 mt-4">
             {post.comments.slice().reverse().map((comment, index) => (
               <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                {comment.user?.avatar ? (
+                {getAvatarUrl(comment.user?.avatar) ? (
                   <img
-                    src={comment.user.avatar}
+                    src={getAvatarUrl(comment.user.avatar)}
                     alt={comment.user.username}
                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   />

@@ -44,35 +44,99 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-5 bg-white rounded shadow">
-      <h1 className="text-3xl font-bold mb-5">Create New Post</h1>
+    <div className="max-w-4xl mx-auto mt-10 px-4 pb-10">
+      <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Create New Post</h1>
+          <p className="text-gray-600">Share your story with the world</p>
+        </div>
 
-      <form onSubmit={submit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Post title"
-          className="border p-2 w-full"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+        <form onSubmit={submit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Post Title *
+            </label>
+            <input
+              type="text"
+              placeholder="Enter an engaging title..."
+              className="border border-gray-300 p-4 w-full rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
 
-        <ReactQuill value={content} onChange={setContent} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Content *
+            </label>
+            <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+              <ReactQuill 
+                value={content} 
+                onChange={setContent}
+                placeholder="Tell your story..."
+                className="h-64"
+              />
+            </div>
+          </div>
 
-        <input type="file" onChange={handleImage} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cover Image
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+              <input 
+                type="file" 
+                onChange={handleImage}
+                accept="image/*"
+                className="hidden"
+                id="image-upload"
+              />
+              <label 
+                htmlFor="image-upload" 
+                className="cursor-pointer flex flex-col items-center"
+              >
+                {preview ? (
+                  <div className="relative group">
+                    <img
+                      src={preview}
+                      alt="preview"
+                      className="max-w-md w-full h-64 object-cover rounded-lg shadow-md"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                      <span className="text-white font-semibold">Click to change</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-blue-600 font-semibold hover:text-blue-700">Upload a cover image</span>
+                    <span className="text-gray-500 text-sm mt-1">PNG, JPG up to 10MB</span>
+                  </>
+                )}
+              </label>
+            </div>
+          </div>
 
-        {preview && (
-          <img
-            src={preview}
-            alt="preview"
-            className="w-40 h-40 object-cover rounded mt-3"
-          />
-        )}
-
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">
-          Publish
-        </button>
-      </form>
+          <div className="flex gap-4 pt-4">
+            <button 
+              type="submit"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transform transition-all hover:shadow-lg active:scale-95"
+            >
+              Publish Post
+            </button>
+            <button 
+              type="button"
+              onClick={() => navigate("/")}
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
