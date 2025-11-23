@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
@@ -13,6 +13,13 @@ export default function PostDetail() {
   const [commentText, setCommentText] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+
+  // Helper function to get full avatar URL
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return null;
+    if (avatar.startsWith('http')) return avatar;
+    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
+  };
 
   useEffect(() => {
     loadPost();
@@ -153,21 +160,26 @@ export default function PostDetail() {
         {/* Author Information */}
         <div className="p-8 pb-4">
           <div className="flex items-center gap-4 mb-6">
-            {post.author?.avatar ? (
-              <img
-                src={post.author.avatar}
-                alt={post.author.username}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl">
-                {post.author?.username?.charAt(0).toUpperCase() || 'U'}
-              </div>
-            )}
+            <Link to={`/profile/${post.author?.username}`} className="flex-shrink-0">
+              {getAvatarUrl(post.author?.avatar) ? (
+                <img
+                  src={getAvatarUrl(post.author.avatar)}
+                  alt={post.author.username}
+                  className="w-16 h-16 rounded-full object-cover hover:opacity-80 transition-opacity"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl hover:bg-blue-600 transition-colors">
+                  {post.author?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
+            </Link>
             <div>
-              <p className="text-lg font-semibold text-gray-900">
+              <Link 
+                to={`/profile/${post.author?.username}`}
+                className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+              >
                 {post.author?.username || "Unknown Author"}
-              </p>
+              </Link>
               <div className="flex items-center text-gray-500 text-sm">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -251,9 +263,9 @@ export default function PostDetail() {
           {user ? (
             <form onSubmit={handleComment} className="mb-6">
               <div className="flex gap-3">
-                {user.avatar ? (
+                {getAvatarUrl(user.avatar) ? (
                   <img
-                    src={user.avatar}
+                    src={getAvatarUrl(user.avatar)}
                     alt={user.username}
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                   />
@@ -301,9 +313,9 @@ export default function PostDetail() {
             <div className="space-y-4">
               {post.comments.slice().reverse().map((comment, index) => (
                 <div key={index} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                  {comment.user?.avatar ? (
+                  {getAvatarUrl(comment.user?.avatar) ? (
                     <img
-                      src={comment.user.avatar}
+                      src={getAvatarUrl(comment.user.avatar)}
                       alt={comment.user.username}
                       className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                     />

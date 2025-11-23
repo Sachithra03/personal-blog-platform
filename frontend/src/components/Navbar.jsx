@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
@@ -6,26 +7,25 @@ export default function Navbar() {
 
   return (
     <div className="bg-gray-900 text-white p-4 flex justify-between">
-      <a href="/" className="text-xl font-bold">Blog Platform</a>
+      <Link to="/" className="text-xl font-bold">Blog Platform</Link>
 
       {user && (
-  <a
-    href="/create"
+  <Link
+    to="/create"
     className="text-white bg-green-600 px-3 py-1 rounded mr-3"
   >
     + New Post
-  </a>
+  </Link>
 )}
 
       {user ? (
         <div className="flex gap-4 items-center">
-          <span>Hello, {user.username}</span>
-          <button className="bg-red-500 px-3 py-1 rounded" onClick={logout}>
-            Logout
-          </button>
+          <Link to="/profile/me" className="hover:text-blue-400 transition-colors">
+            Hello, {user.username}
+          </Link>
         </div>
       ) : (
-        <a href="/login" className="text-blue-400">Login</a>
+        <Link to="/login" className="text-blue-400">Login</Link>
       )}
     </div>
   );
