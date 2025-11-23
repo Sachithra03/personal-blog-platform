@@ -47,6 +47,16 @@ router.patch("/profile", auth, upload.single("avatar"), async (req, res) => {
         const updateData = {};
 
         if (req.body.username) {
+            // Check if username is already taken by another user
+            const existingUser = await User.findOne({ 
+                username: req.body.username,
+                _id: { $ne: userId }
+            });
+            
+            if (existingUser) {
+                return res.status(400).json({ error: "Username already taken" });
+            }
+            
             updateData.username = req.body.username;
         }
 
@@ -60,6 +70,23 @@ router.patch("/profile", auth, upload.single("avatar"), async (req, res) => {
             { new: true, select: "-password" }
         );
 
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get user profile by username
+router.get("/profile/:username", async (req, res) => {
+    try {
+        const { username } = req.params;
+        
+        const user = await User.findOne({ username }).select("-password");
+        
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }

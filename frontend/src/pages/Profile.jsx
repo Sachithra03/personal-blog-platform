@@ -46,23 +46,37 @@ export default function Profile() {
         return;
       }
 
-      // Get all posts
-      const { data: allPosts } = await api.get("/posts");
-      
-      // Find user's posts
-      const userPosts = allPosts.filter(
-        post => post.author?.username === targetUsername
-      );
-      
-      if (userPosts.length > 0) {
-        setProfileUser(userPosts[0].author);
+      // Try to get user profile from backend first
+      try {
+        const { data: userData } = await api.get(`/auth/profile/${targetUsername}`);
+        setProfileUser({
+          ...userData,
+          avatar: getAvatarUrl(userData.avatar)
+        });
+        
+        // Get user's posts
+        const { data: allPosts } = await api.get("/posts");
+        const userPosts = allPosts.filter(
+          post => post.author?.username === targetUsername
+        );
         setPosts(userPosts);
-      } else if (username === "me" && currentUser) {
-        // If viewing own profile and no posts, show current user info
-        setProfileUser(currentUser);
-        setPosts([]);
-      } else {
-        setError("User not found");
+      } catch (profileErr) {
+        // If user profile endpoint fails, fall back to posts lookup
+        const { data: allPosts } = await api.get("/posts");
+        const userPosts = allPosts.filter(
+          post => post.author?.username === targetUsername
+        );
+        
+        if (userPosts.length > 0) {
+          setProfileUser(userPosts[0].author);
+          setPosts(userPosts);
+        } else if (username === "me" && currentUser) {
+          // If viewing own profile and no posts, show current user info
+          setProfileUser(currentUser);
+          setPosts([]);
+        } else {
+          setError("User not found");
+        }
       }
     } catch (err) {
       console.error("Failed to load profile:", err);
@@ -101,14 +115,24 @@ export default function Profile() {
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       
+      // If username changed, navigate to new profile URL
+      const usernameChanged = data.username !== profileUser.username;
+      
       alert("Profile updated successfully!");
       setIsEditing(false);
       setAvatarFile(null);
       setAvatarPreview(null);
-      await loadProfile();
+      
+      if (usernameChanged) {
+        // Redirect to new username profile
+        navigate(`/profile/${data.username}`, { replace: true });
+      } else {
+        // Just reload current profile
+        await loadProfile();
+      }
     } catch (error) {
       console.error("Failed to update profile:", error);
-      alert("Failed to update profile. Please try again.");
+      alert(error.response?.data?.error || "Failed to update profile. Please try again.");
     } finally {
       setIsSaving(false);
     }
