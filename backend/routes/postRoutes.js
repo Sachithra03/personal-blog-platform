@@ -24,8 +24,16 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
 
 // Get all posts
 router.get("/", async (req, res) => {
-  const posts = await Post.find().populate("author", "username avatar");
-  res.json(posts);
+  try {
+    // return newest posts first
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate("author", "username avatar");
+
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Get single post

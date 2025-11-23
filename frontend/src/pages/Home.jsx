@@ -19,13 +19,13 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 px-4">
+    <div className="max-w-3xl mx-auto mt-10 px-4">
       <h1 className="text-3xl font-bold mb-6">Latest Posts</h1>
 
       {posts.length === 0 ? (
         <p className="text-gray-500">No posts available.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
           {posts.map((post) => (
             <PostCard key={post._id} post={post} />
           ))}
