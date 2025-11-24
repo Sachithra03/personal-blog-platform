@@ -34,6 +34,10 @@ export const register = async (req, res) => {
       expiresIn: "7d",
     });
 
+    // Save token to database (overwrites previous token)
+    user.token = token;
+    await user.save();
+
     res.status(201).json({
       token,
       user: {
@@ -69,6 +73,10 @@ export const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
+
+    // Save token to database (overwrites previous token)
+    user.token = token;
+    await user.save();
 
     res.json({
       token,
@@ -154,6 +162,22 @@ export const deleteAvatar = async (req, res) => {
     }
 
     res.json({ message: "Avatar deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Logout user (remove token from database)
+export const logout = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    
+    // Remove token
+    user.token = null;
+    await user.save();
+
+    res.json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

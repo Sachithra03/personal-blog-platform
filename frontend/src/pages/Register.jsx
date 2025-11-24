@@ -23,21 +23,19 @@ export default function Register() {
 
     const submit = async (e) => {
         e.preventDefault();
+        setError("");
         try{
-            await api.post("/auth/register", form);
-
-             // auto login after registration
-            const { data} = await api.post("/auth/login", {
-                email: form.email,
-                password: form.password,
-            });
+            const { data } = await api.post("/auth/register", form);
             
+            // Save token and user
             setUser(data.user);
             setToken(data.token);
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
 
             navigate("/");
         }catch(err){
-            setError(err.response?.data?.message || "Registration failed.");
+            setError(err.response?.data?.error || err.response?.data?.message || "Registration failed.");
         }
     };
 

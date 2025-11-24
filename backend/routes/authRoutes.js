@@ -13,6 +13,7 @@ router.get("/profile/:username", authController.getUserByUsername);
 // Protected routes
 router.patch("/profile", auth, upload.single("avatar"), authController.updateProfile);
 router.delete("/profile/avatar", auth, authController.deleteAvatar);
+router.post("/logout", auth, authController.logout);
 
 export default router;
 

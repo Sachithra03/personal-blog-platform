@@ -19,13 +19,19 @@ export default function Login() {
 
   const submit = async (e) => {
     e.preventDefault();
+    setError("");
     try {
       const { data } = await api.post("/auth/login", form);
+      
+      // Save token and user
       setUser(data.user);
       setToken(data.token);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.error || err.response?.data?.message || "Login failed");
     }
   };
 
