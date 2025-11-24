@@ -9,7 +9,15 @@ import postRoutes from "./routes/postRoutes.js";
 dotenv.config();
 const app = express();
 
-app.use(cors());
+// CORS configuration - Allow requests from Vercel and localhost
+app.use(cors({
+    origin: [
+        "http://localhost:3000",
+        "https://personal-blog-platform-frontend.vercel.app",
+        /\.vercel\.app$/  // Allow all Vercel preview deployments
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
