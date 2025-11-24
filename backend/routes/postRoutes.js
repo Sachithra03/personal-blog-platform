@@ -39,8 +39,19 @@ router.get("/", async (req, res) => {
 
 // Get single post
 router.get("/:id", async (req, res) => {
-  const post = await Post.findById(req.params.id).populate("author", "username avatar");
+  try{
+  const post = await Post.findById(req.params.id)
+  .populate("author", "username avatar")
+  .populate("comments.user", "username avatar");
+
+  if(!post){
+    return res.status(404).json({ error: "Post not found" });
+  }
   res.json(post);
+}catch(error){
+  console.error("Get single post error:", error);
+  res.status(500).json({ error: error.message });
+}
 });
 
 // Like post
@@ -97,6 +108,39 @@ router.post("/:id/comment", auth, async (req, res) => {
     res.json(post);
   } catch (error) {
     console.error("Comment error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update post
+router.put("/:id", auth, upload.single("image"), async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // Check if the user is the post author
+    if (post.author.toString() !== req.user.id) {
+      return res.status(403).json({ error: "You are not authorized to update this post" });
+    }
+
+    // Update fields
+    post.title = req.body.title || post.title;
+    post.content = req.body.content || post.content;
+    if (req.file) {
+      post.coverImage = req.file.path;
+    }
+
+    await post.save();
+    
+    // Populate author before sending response
+    await post.populate("author", "username avatar");
+    
+    res.json(post);
+  } catch (error) {
+    console.error("Update error:", error);
     res.status(500).json({ error: error.message });
   }
 });

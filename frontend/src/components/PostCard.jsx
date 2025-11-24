@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 export default function PostCard({ post: initialPost, onDelete }) {
   const { user } = useContext(AuthContext);
@@ -12,6 +13,8 @@ export default function PostCard({ post: initialPost, onDelete }) {
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const navigate = useNavigate();
 
   // Helper function to get full avatar URL
   const getAvatarUrl = (avatar) => {
@@ -128,6 +131,12 @@ export default function PostCard({ post: initialPost, onDelete }) {
     user.username === post.author.username
   );
 
+  
+  const handleUpdate = () => {
+    
+    navigate(`/edit/${post._id}`);
+  }
+
   // Handle delete post
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this post?")) {
@@ -198,6 +207,18 @@ export default function PostCard({ post: initialPost, onDelete }) {
               {/* Dropdown Menu */}
               {showMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  
+                  <button
+                    onClick={handleUpdate}
+                    disabled={isUpdating}
+                    className="w-full px-4 py-3 text-left text-black-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <svg className="w-5 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6.232-6.232a2 2 0 112.828 2.828L11.828 13.828a2 2 0 01-.828.516L7 15l1.656-4.172a2 2 0 01.516-.828z" />
+                    </svg>
+                    {isUpdating ? "Updating..." : "Update Post"}
+                  </button>
+                  
                   <button
                     onClick={handleDelete}
                     disabled={isDeleting}

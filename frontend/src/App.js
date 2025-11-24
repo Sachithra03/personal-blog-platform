@@ -7,6 +7,7 @@ import CreatePost from "./pages/CreatePost";
 import Home from "./pages/Home";
 import PostDetail from "./pages/PostDetail";
 import Profile from "./pages/Profile";
+import UpdatePost from "./pages/UpdatePost";
 
 export default function App(){
   return(
@@ -29,6 +30,8 @@ export default function App(){
             </ProtectedRoute>
           }
         />
+        <Route path="/edit/:id" element={<UpdatePost />} />
+        
 
       </Routes>
       </div>
