@@ -1,26 +1,26 @@
 import express from "express";
 import auth from "../middleware/authMiddleware.js";
 import upload from "../middleware/upload.js";
-import * as authController from "../controllers/authController.js";
+import { 
+    register, 
+    login, 
+    getUserByUsername,
+    updateProfile,
+    deleteAvatar,
+    getUserAvatar 
+} from "../controllers/authController.js";
 
 const router = express.Router();
 
 // Public routes
-router.post("/register", authController.register);
-router.post("/login", authController.login);
-router.get("/profile/:username", authController.getUserByUsername);
+router.post("/register", register);
+router.post("/login", login);
+router.get("/profile/:username", getUserByUsername);
 
 // Protected routes
-router.patch("/profile", auth, upload.single("avatar"), authController.updateProfile);
-router.delete("/profile/avatar", auth, authController.deleteAvatar);
-router.post("/logout", auth, authController.logout);
-
-// Get user avatar image
-router.get("/avatar/:userId", authController.getUserAvatar);
+router.patch("/profile", auth, upload.single("avatar"), updateProfile);
+router.delete("/profile/avatar", auth, deleteAvatar);
+router.get("/avatar/:userId", getUserAvatar);
+router.post("/logout", auth, (req, res) => res.json({ message: "Logged out" }));
 
 export default router;
-
-
-
-
-
