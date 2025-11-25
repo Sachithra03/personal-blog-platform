@@ -4,9 +4,9 @@ A full-stack blog platform built with the MERN stack, featuring user authenticat
 
 ## 🚀 Live Demo
 
-**Frontend:** [https://personal-blog-platform-livid.vercel.app](https://personal-blog-platform-livid.vercel.app)
+**Frontend:** [https://personal-blog-platform-master.vercel.app/](https://personal-blog-platform-master.vercel.app/)
 
-**Backend API:** [https://personal-blog-platform-backendsuccess.onrender.com](https://personal-blog-platform-backendsuccess.onrender.com)
+**Backend API:** [https://personal-blog-platform-master.onrender.com](https://personal-blog-platform-master.onrender.com)
 
 ## ✨ Features
 
