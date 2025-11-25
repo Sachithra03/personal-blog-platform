@@ -15,10 +15,12 @@ export const getAvatarUrl = (user) => {
   
   // If user has avatar data, use the avatar endpoint
   if (user.avatar && user.avatar.data) {
-    return `${getApiBaseUrl()}/api/auth/avatar/${user._id || user.id}`;
+    // Add timestamp to bust cache when avatar changes
+    const timestamp = user.updatedAt || Date.now();
+    return `${getApiBaseUrl()}/api/auth/avatar/${user._id || user.id}?t=${timestamp}`;
   }
   
-  // If avatar is a URL string 
+  // If avatar is a URL string (old format)
   if (typeof user.avatar === 'string' && user.avatar.startsWith('http')) {
     return user.avatar;
   }
