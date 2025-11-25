@@ -210,7 +210,7 @@ REACT_APP_API_URL=https://your-backend-app.onrender.com/api
 4. Set environment variable: `REACT_APP_API_URL`
 
 ## 📸 Screenshots
-
+[https://drive.google.com/drive/folders/1If1tbFjiUhAbQZME9nMa4ZrC9U0TZlTB?usp=sharing](https://drive.google.com/drive/folders/1If1tbFjiUhAbQZME9nMa4ZrC9U0TZlTB?usp=sharing)
 ### Home Page
 - Displays all blog posts in a feed
 - Like and comment on posts
