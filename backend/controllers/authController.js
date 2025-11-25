@@ -34,10 +34,6 @@ export const register = async (req, res) => {
       expiresIn: "7d",
     });
 
-    // Save token to database (overwrites previous token)
-    user.token = token;
-    await user.save();
-
     res.status(201).json({
       token,
       user: {
@@ -73,10 +69,6 @@ export const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
-
-    // Save token to database (overwrites previous token)
-    user.token = token;
-    await user.save();
 
     res.json({
       token,
@@ -128,7 +120,12 @@ export const updateProfile = async (req, res) => {
     // Prepare update data
     const updateData = {};
     if (username) updateData.username = username;
-    if (req.file) updateData.avatar = req.file.path;
+    if (req.file) {
+      updateData.avatar = {
+        data: req.file.buffer.toString('base64'),
+        contentType: req.file.mimetype
+      };
+    }
 
     // Update user
     const user = await User.findByIdAndUpdate(
@@ -150,35 +147,37 @@ export const deleteAvatar = async (req, res) => {
     const user = await User.findById(userId);
 
     if (user.avatar) {
-      // Delete file from filesystem
-      const avatarPath = path.join(__dirname, "..", user.avatar);
-      if (fs.existsSync(avatarPath)) {
-        fs.unlinkSync(avatarPath);
-      }
-
       // Remove avatar from database
-      user.avatar = null;
+      user.avatar = {
+        data: null,
+        contentType: null
+      };
       await user.save();
     }
 
-    res.json({ message: "Avatar deleted successfully" });
+    const updatedUser = await User.findById(userId).select("-password");
+    res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Logout user (remove token from database)
-export const logout = async (req, res) => {
+// Get user avatar image
+export const getUserAvatar = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-    
-    // Remove token
-    user.token = null;
-    await user.save();
+    const user = await User.findById(req.params.userId);
 
-    res.json({ message: "Logged out successfully" });
+    if (!user || !user.avatar || !user.avatar.data) {
+      return res.status(404).json({ error: "Avatar not found" });
+    }
+
+    const img = Buffer.from(user.avatar.data, 'base64');
+    
+    res.set('Content-Type', user.avatar.contentType);
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.send(img);
   } catch (error) {
+    console.error("Get avatar error:", error);
     res.status(500).json({ error: error.message });
   }
 };
