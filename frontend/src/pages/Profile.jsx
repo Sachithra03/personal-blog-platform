@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 import PostCard from "../components/PostCard";
+import { getAvatarUrl } from "../utils/imageUrl";
 
 export default function Profile() {
   const { username } = useParams();
@@ -17,13 +18,6 @@ export default function Profile() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Helper function to get full avatar URL
-  const getAvatarUrl = (avatar) => {
-    if (!avatar) return null;
-    if (avatar.startsWith('http')) return avatar;
-    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
-  };
 
   const handleLogout = () => {
     logout();

@@ -1,18 +1,12 @@
 import { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { getAvatarUrl } from "../utils/imageUrl";
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
-
-  // Helper function to get full avatar URL
-  const getAvatarUrl = (avatar) => {
-    if (!avatar) return null;
-    if (avatar.startsWith('http')) return avatar;
-    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
-  };
 
   const isActive = (path) => location.pathname === path;
 

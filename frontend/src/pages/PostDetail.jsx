@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
+import { getPostImageUrl, getAvatarUrl } from "../utils/imageUrl";
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -13,13 +14,6 @@ export default function PostDetail() {
   const [commentText, setCommentText] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
-
-  // Helper function to get full avatar URL
-  const getAvatarUrl = (avatar) => {
-    if (!avatar) return null;
-    if (avatar.startsWith('http')) return avatar;
-    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
-  };
 
   useEffect(() => {
     loadPost();
@@ -196,10 +190,10 @@ export default function PostDetail() {
         </div>
 
         {/* Cover Image */}
-        {post.coverImage && (
+        {post.coverImage && post.coverImage.data && (
           <div className="w-full">
             <img
-              src={`http://localhost:5000/${post.coverImage}`}
+              src={getPostImageUrl(post._id)}
               alt={post.title}
               className="w-full h-auto object-contain max-h-[600px]"
             />

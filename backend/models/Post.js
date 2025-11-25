@@ -10,7 +10,8 @@ const postSchema = new mongoose.Schema({
         required: true
     },
     coverImage:{
-        type: String
+        data: String,
+        contentType: String
     },
     author:{
         type: mongoose.Schema.Types.ObjectId, ref: "User"

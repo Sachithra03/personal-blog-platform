@@ -35,12 +35,20 @@ export const getPostById = async (req, res) => {
 // Create new post
 export const createPost = async (req, res) => {
   try {
-    const newPost = await Post.create({
+    const postData = {
       title: req.body.title,
       content: req.body.content,
       author: req.user.id,
-      coverImage: req.file ? req.file.path : null,
-    });
+    };
+
+    if (req.file) {
+      postData.coverImage = {
+        data: req.file.buffer.toString('base64'),
+        contentType: req.file.mimetype
+      };
+    }
+
+    const newPost = await Post.create(postData);
 
     res.json(newPost);
   } catch (error) {
@@ -66,7 +74,10 @@ export const updatePost = async (req, res) => {
     post.title = req.body.title || post.title;
     post.content = req.body.content || post.content;
     if (req.file) {
-      post.coverImage = req.file.path;
+      post.coverImage = {
+        data: req.file.buffer.toString('base64'),
+        contentType: req.file.mimetype
+      };
     }
 
     await post.save();
@@ -158,6 +169,26 @@ export const addComment = async (req, res) => {
     res.json(post);
   } catch (error) {
     console.error("Comment error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get post image
+export const getPostImage = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post || !post.coverImage || !post.coverImage.data) {
+      return res.status(404).json({ error: "Image not found" });
+    }
+
+    const img = Buffer.from(post.coverImage.data, 'base64');
+    
+    res.set('Content-Type', post.coverImage.contentType);
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.send(img);
+  } catch (error) {
+    console.error("Get image error:", error);
     res.status(500).json({ error: error.message });
   }
 };
