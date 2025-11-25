@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
+import { getPostImageUrl, getAvatarUrl } from "../utils/imageUrl";
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -13,13 +14,6 @@ export default function PostDetail() {
   const [commentText, setCommentText] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
-
-  // Helper function to get full avatar URL
-  const getAvatarUrl = (avatar) => {
-    if (!avatar) return null;
-    if (avatar.startsWith('http')) return avatar;
-    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
-  };
 
   useEffect(() => {
     loadPost();
@@ -161,9 +155,9 @@ export default function PostDetail() {
         <div className="p-8 pb-4">
           <div className="flex items-center gap-4 mb-6">
             <Link to={`/profile/${post.author?.username}`} className="flex-shrink-0">
-              {getAvatarUrl(post.author?.avatar) ? (
+              {getAvatarUrl(post.author) ? (
                 <img
-                  src={getAvatarUrl(post.author.avatar)}
+                  src={getAvatarUrl(post.author)}
                   alt={post.author.username}
                   className="w-16 h-16 rounded-full object-cover hover:opacity-80 transition-opacity"
                 />
@@ -196,10 +190,10 @@ export default function PostDetail() {
         </div>
 
         {/* Cover Image */}
-        {post.coverImage && (
+        {post.coverImage && post.coverImage.data && (
           <div className="w-full">
             <img
-              src={`http://localhost:5000/${post.coverImage}`}
+              src={getPostImageUrl(post._id)}
               alt={post.title}
               className="w-full h-auto object-contain max-h-[600px]"
             />
@@ -263,9 +257,9 @@ export default function PostDetail() {
           {user ? (
             <form onSubmit={handleComment} className="mb-6">
               <div className="flex gap-3">
-                {getAvatarUrl(user.avatar) ? (
+                {getAvatarUrl(user) ? (
                   <img
-                    src={getAvatarUrl(user.avatar)}
+                    src={getAvatarUrl(user)}
                     alt={user.username}
                     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                   />
@@ -313,9 +307,9 @@ export default function PostDetail() {
             <div className="space-y-4">
               {post.comments.slice().reverse().map((comment, index) => (
                 <div key={index} className="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                  {getAvatarUrl(comment.user?.avatar) ? (
+                  {getAvatarUrl(comment.user) ? (
                     <img
-                      src={getAvatarUrl(comment.user.avatar)}
+                      src={getAvatarUrl(comment.user)}
                       alt={comment.user.username}
                       className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                     />

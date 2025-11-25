@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import { getPostImageUrl, getAvatarUrl } from "../utils/imageUrl";
 
 export default function PostCard({ post: initialPost, onDelete }) {
   const { user } = useContext(AuthContext);
@@ -15,13 +16,6 @@ export default function PostCard({ post: initialPost, onDelete }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
-
-  // Helper function to get full avatar URL
-  const getAvatarUrl = (avatar) => {
-    if (!avatar) return null;
-    if (avatar.startsWith('http')) return avatar;
-    return `http://localhost:5000/${avatar.replace(/\\/g, '/')}`;
-  };
 
   // Format date
   const formatDate = (dateString) => {
@@ -166,9 +160,9 @@ export default function PostCard({ post: initialPost, onDelete }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Link to={`/profile/${post.author?.username}`} className="flex-shrink-0">
-              {getAvatarUrl(post.author?.avatar) ? (
+              {getAvatarUrl(post.author) ? (
                 <img
-                  src={getAvatarUrl(post.author.avatar)}
+                  src={getAvatarUrl(post.author)}
                   alt={post.author.username}
                   className="w-12 h-12 rounded-full object-cover hover:opacity-80 transition-opacity"
                 />
@@ -252,10 +246,10 @@ export default function PostCard({ post: initialPost, onDelete }) {
       </div>
 
       {/* Cover Image  */}
-      {post.coverImage && (
+      {post.coverImage && post.coverImage.data && (
         <div className="w-full">
           <img
-            src={`http://localhost:5000/${post.coverImage}`}
+            src={getPostImageUrl(post._id)}
             alt={post.title}
             className="w-full h-auto object-contain max-h-96"
           />
@@ -333,9 +327,9 @@ export default function PostCard({ post: initialPost, onDelete }) {
           <div className="space-y-3 mt-4">
             {post.comments.slice().reverse().map((comment, index) => (
               <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                {getAvatarUrl(comment.user?.avatar) ? (
+                {getAvatarUrl(comment.user) ? (
                   <img
-                    src={getAvatarUrl(comment.user.avatar)}
+                    src={getAvatarUrl(comment.user)}
                     alt={comment.user.username}
                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   />

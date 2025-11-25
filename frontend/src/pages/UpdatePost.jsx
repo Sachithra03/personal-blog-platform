@@ -6,6 +6,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useEffect } from "react";
 import {useParams} from "react-router-dom";
+import { getPostImageUrl } from "../utils/imageUrl";
 
 export default function UpdatePost() {
   const navigate = useNavigate();
@@ -25,8 +26,8 @@ export default function UpdatePost() {
         setTitle(data.title);
         setContent(data.content);
 
-        if(data.coverImage){
-          setPreview(`http://localhost:5000/${data.coverImage}`);
+        if(data.coverImage && data.coverImage.data){
+          setPreview(getPostImageUrl(id));
         }
       }catch(error){
         console.error("Failed to load post: ", error);
