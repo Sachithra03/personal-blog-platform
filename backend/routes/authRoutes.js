@@ -14,6 +14,9 @@ router.get("/profile/:username", authController.getUserByUsername);
 router.patch("/profile", auth, upload.single("avatar"), authController.updateProfile);
 router.delete("/profile/avatar", auth, authController.deleteAvatar);
 
+// Get user avatar image
+router.get("/avatar/:userId", authController.getUserAvatar);
+
 export default router;
 
 

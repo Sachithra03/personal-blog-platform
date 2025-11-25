@@ -160,9 +160,9 @@ export default function PostCard({ post: initialPost, onDelete }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Link to={`/profile/${post.author?.username}`} className="flex-shrink-0">
-              {getAvatarUrl(post.author?.avatar) ? (
+              {getAvatarUrl(post.author) ? (
                 <img
-                  src={getAvatarUrl(post.author.avatar)}
+                  src={getAvatarUrl(post.author)}
                   alt={post.author.username}
                   className="w-12 h-12 rounded-full object-cover hover:opacity-80 transition-opacity"
                 />
@@ -327,9 +327,9 @@ export default function PostCard({ post: initialPost, onDelete }) {
           <div className="space-y-3 mt-4">
             {post.comments.slice().reverse().map((comment, index) => (
               <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                {getAvatarUrl(comment.user?.avatar) ? (
+                {getAvatarUrl(comment.user) ? (
                   <img
-                    src={getAvatarUrl(comment.user.avatar)}
+                    src={getAvatarUrl(comment.user)}
                     alt={comment.user.username}
                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   />

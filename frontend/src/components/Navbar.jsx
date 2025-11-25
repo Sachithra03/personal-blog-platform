@@ -55,9 +55,9 @@ export default function Navbar() {
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/10 transition-all group"
             >
-              {getAvatarUrl(user.avatar) ? (
+              {getAvatarUrl(user) ? (
                 <img
-                  src={getAvatarUrl(user.avatar)}
+                  src={getAvatarUrl(user)}
                   alt={user.username}
                   className="w-10 h-10 rounded-full object-cover border-2 border-blue-400 shadow-lg group-hover:border-blue-300 transition-all ring-2 ring-blue-400/30"
                 />

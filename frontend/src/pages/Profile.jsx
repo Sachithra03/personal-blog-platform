@@ -43,10 +43,7 @@ export default function Profile() {
       // Try to get user profile from backend first
       try {
         const { data: userData } = await api.get(`/auth/profile/${targetUsername}`);
-        setProfileUser({
-          ...userData,
-          avatar: getAvatarUrl(userData.avatar)
-        });
+        setProfileUser(userData);
         
         // Get user's posts
         const { data: allPosts } = await api.get("/posts");
@@ -102,12 +99,8 @@ export default function Profile() {
       });
       
       // Update current user in context and localStorage
-      const updatedUser = {
-        ...data,
-        avatar: getAvatarUrl(data.avatar)
-      };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
       
       // If username changed, navigate to new profile URL
       const usernameChanged = data.username !== profileUser.username;
@@ -154,12 +147,8 @@ export default function Profile() {
       const { data } = await api.delete("/auth/profile/avatar");
       
       // Update current user in context and localStorage
-      const updatedUser = {
-        ...data,
-        avatar: null
-      };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
       
       setAvatarPreview(null);
       setAvatarFile(null);
@@ -241,9 +230,9 @@ export default function Profile() {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           {/* Avatar */}
           <div className="flex-shrink-0 relative">
-            {(avatarPreview || getAvatarUrl(profileUser.avatar)) ? (
+            {(avatarPreview || getAvatarUrl(profileUser)) ? (
               <img
-                src={avatarPreview || getAvatarUrl(profileUser.avatar)}
+                src={avatarPreview || getAvatarUrl(profileUser)}
                 alt={profileUser.username}
                 className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
               />

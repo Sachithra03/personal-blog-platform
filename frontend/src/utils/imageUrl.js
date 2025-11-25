@@ -10,8 +10,19 @@ export const getPostImageUrl = (postId) => {
 };
 
 // Helper function to get avatar URL
-export const getAvatarUrl = (avatar) => {
-  if (!avatar) return null;
-  if (avatar.startsWith('http')) return avatar;
-  return `${getApiBaseUrl()}/${avatar.replace(/\\/g, '/')}`;
+export const getAvatarUrl = (user) => {
+  if (!user) return null;
+  
+  // If user has avatar data, use the avatar endpoint
+  if (user.avatar && user.avatar.data) {
+    return `${getApiBaseUrl()}/api/auth/avatar/${user._id || user.id}`;
+  }
+  
+  // If avatar is a URL string 
+  if (typeof user.avatar === 'string' && user.avatar.startsWith('http')) {
+    return user.avatar;
+  }
+  
+  // No avatar
+  return null;
 };

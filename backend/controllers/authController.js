@@ -120,7 +120,12 @@ export const updateProfile = async (req, res) => {
     // Prepare update data
     const updateData = {};
     if (username) updateData.username = username;
-    if (req.file) updateData.avatar = req.file.path;
+    if (req.file) {
+      updateData.avatar = {
+        data: req.file.buffer.toString('base64'),
+        contentType: req.file.mimetype
+      };
+    }
 
     // Update user
     const user = await User.findByIdAndUpdate(
@@ -142,19 +147,37 @@ export const deleteAvatar = async (req, res) => {
     const user = await User.findById(userId);
 
     if (user.avatar) {
-      // Delete file from filesystem
-      const avatarPath = path.join(__dirname, "..", user.avatar);
-      if (fs.existsSync(avatarPath)) {
-        fs.unlinkSync(avatarPath);
-      }
-
       // Remove avatar from database
-      user.avatar = null;
+      user.avatar = {
+        data: null,
+        contentType: null
+      };
       await user.save();
     }
 
-    res.json({ message: "Avatar deleted successfully" });
+    const updatedUser = await User.findById(userId).select("-password");
+    res.json(updatedUser);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get user avatar image
+export const getUserAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    if (!user || !user.avatar || !user.avatar.data) {
+      return res.status(404).json({ error: "Avatar not found" });
+    }
+
+    const img = Buffer.from(user.avatar.data, 'base64');
+    
+    res.set('Content-Type', user.avatar.contentType);
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+    res.send(img);
+  } catch (error) {
+    console.error("Get avatar error:", error);
     res.status(500).json({ error: error.message });
   }
 };
