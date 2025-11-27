@@ -1,6 +1,6 @@
 // Get API base URL
 export const getApiBaseUrl = () => {
-  return (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
+  return (process.env.REACT_APP_API_URL || 'http://localhost:5001/api').replace('/api', '');
 };
 
 // Helper function to get post image URL
