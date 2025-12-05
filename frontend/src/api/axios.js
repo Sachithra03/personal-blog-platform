@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    // Prefer env override; fall back to backend default PORT=5001
+    // Prefer env override/ backend default PORT=5001
     baseURL: process.env.REACT_APP_API_URL || "http://localhost:5001/api",
 });
 
